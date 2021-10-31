@@ -16,12 +16,12 @@ function [valueBeh] = getValueBeh(Infos,ttx)
 
     % Summary values
     valueBeh.summaryData = table();
-    valueBeh.summaryData.nostop_hi = mean(valueBeh.dist.nostop.hi);
-    valueBeh.summaryData.nostop_lo = mean(valueBeh.dist.nostop.lo);
-    valueBeh.summaryData.noncanc_hi = mean(valueBeh.dist.noncanceled.hi);
-    valueBeh.summaryData.noncanc_lo = mean(valueBeh.dist.noncanceled.lo);
-    valueBeh.summaryData.all_hi = mean(valueBeh.dist.all.hi);
-    valueBeh.summaryData.all_lo = mean(valueBeh.dist.all.lo);
+    valueBeh.summaryData.nostop_hi = median(valueBeh.dist.nostop.hi);
+    valueBeh.summaryData.nostop_lo = median(valueBeh.dist.nostop.lo);
+    valueBeh.summaryData.noncanc_hi = median(valueBeh.dist.noncanceled.hi);
+    valueBeh.summaryData.noncanc_lo = median(valueBeh.dist.noncanceled.lo);
+    valueBeh.summaryData.all_hi = median(valueBeh.dist.all.hi);
+    valueBeh.summaryData.all_lo = median(valueBeh.dist.all.lo);
     
     valueBeh.statisticFlags = table();
     valueBeh.statisticFlags.all = ttest2(valueBeh.dist.all.hi,valueBeh.dist.all.lo);
