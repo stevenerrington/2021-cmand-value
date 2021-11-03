@@ -31,9 +31,7 @@ end
 Infos.Decide_ = data_in.Decide_; Infos.Target_ = data_in.Target_;
 
 refreshRate = 1000/70;
-refreshRateAdjust = (1000/60)/(1000/70);
-
-stateFlags.UseSsdVrCount = round(data_in.Infos_.Curr_SSD/refreshRate)*refreshRateAdjust;
+stateFlags.UseSsdVrCount = round(data_in.Infos_.Curr_SSD/refreshRate);
 
 nostopTrls = isnan(data_in.StopSignal_);
 stateFlags.UseSsdVrCount(nostopTrls) = NaN;
