@@ -27,6 +27,9 @@ for ssdIdx = 1:length(inh_SSD)
     
     inh_nTr(ssdIdx) = n_NC+n_C;
     inh_pnc(ssdIdx) = n_NC/(inh_nTr(ssdIdx));
+    
+    
+
 
 end
 
@@ -44,6 +47,16 @@ stopSignalBeh.ssrt = getSSRT(stopSignalBeh.inh_SSD,...
     RTdist.nostop(:,1),...
     stopSignalBeh.inh_weibull.parameters);
 
+for ssdIdx = 1:length(inh_SSD)
+    
+    inh_zrft(ssdIdx) = (mean(RTdist.nostop(:,1)) -...
+        inh_SSD(ssdIdx) - stopSignalBeh.ssrt.integrationWeighted)...
+        ./(std(RTdist.nostop(:,1)));
+end
+
+stopSignalBeh.inh_zrft = inh_zrft;
+    
+    
 % [stopDataBEESTS] = cmand_BEESTpreprocess(stateFlags,Infos)
 
 end

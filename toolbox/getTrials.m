@@ -1,4 +1,4 @@
-function [ttx,ttx_value] = getTrials(stateFlags)
+function [ttx,ttx_value,ttx_history] = getTrials(stateFlags)
 % Setup data
 trialTypes = {'canceled','noncanceled','nostop','gowrong'};
 targLocTypes = {'all','left','right'};
@@ -57,4 +57,33 @@ for trialTypeIdx = 1:length(trialTypes)
         end
         
     end
+end
+
+
+%% Trial history
+clear ttx_history
+
+tempttx.nostopFiltered.all = find(stateFlags.IsGoCorrect == 1);
+tempttx.nostopFiltered.hi = find(stateFlags.IsGoCorrect == 1 & stateFlags.IsHiRwrd == 1);
+tempttx.nostopFiltered.lo = find(stateFlags.IsGoCorrect == 1 & stateFlags.IsLoRwrd == 1);
+
+for rewardAmountIdx = 1:length(rewardAmountTypes)
+    rewardAmount = rewardAmountTypes{rewardAmountIdx};
+    
+    clear pre_nostop_ttx
+    pre_nostop_ttx.(rewardAmount) = tempttx.nostopFiltered.(rewardAmount) - 1;
+    pre_nostop_ttx.(rewardAmount) = pre_nostop_ttx.(rewardAmount)(pre_nostop_ttx.(rewardAmount) > 0);
+    
+    ttx_history.(rewardAmount).C_before_NS = pre_nostop_ttx.(rewardAmount)(ismember(pre_nostop_ttx.(rewardAmount), ttx.canceled.all.(rewardAmount)));
+    ttx_history.(rewardAmount).NC_before_NS = pre_nostop_ttx.(rewardAmount)(ismember(pre_nostop_ttx.(rewardAmount), ttx.noncanceled.all.(rewardAmount)));
+    ttx_history.(rewardAmount).NS_before_NS = pre_nostop_ttx.(rewardAmount)(ismember(pre_nostop_ttx.(rewardAmount), ttx.nostop.all.(rewardAmount)));
+    
+    ttx_history.(rewardAmount).NS_after_C = ttx_history.(rewardAmount).C_before_NS + 1;
+    ttx_history.(rewardAmount).NS_after_NC = ttx_history.(rewardAmount).NC_before_NS + 1;
+    ttx_history.(rewardAmount).NS_after_NS = ttx_history.(rewardAmount).NS_before_NS + 1;
+    
+    
+end
+
+
 end

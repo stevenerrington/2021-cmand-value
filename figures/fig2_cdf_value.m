@@ -29,7 +29,7 @@ for valueCondIdx = 1:2
 end
 
 
-
+%%
 
 for monkeyIdx = 1:length(monkeyList)
     
@@ -70,3 +70,40 @@ end
 
 figure('Renderer', 'painters', 'Position', [100 100 1200 500]);
 valRTCDF_monkey.draw();
+
+%%
+
+
+
+RTsummary_fig.data = [rtcomparison.nostop_lo; rtcomparison.nostop_hi; rtcomparison.noncanc_lo; rtcomparison.noncanc_hi];
+RTsummary_fig.valueLabel = [repmat({'low'},nSessions,1);repmat({'high'},nSessions,1); repmat({'low'},nSessions,1); repmat({'high'},nSessions,1)];
+RTsummary_fig.trialLabel = [repmat({'nostop'},nSessions*2,1);repmat({'noncanc'},nSessions*2,1)];
+RTsummary_fig.monkeyLabel = repmat(rtcomparison.monkey,4,1);
+
+clear RTsummary_fig_gramm
+
+for monkeyIdx = 1:length(monkeyList)
+    
+    monkeyArrayIdx = [];
+    monkeyArrayIdx = find(strcmp(RTsummary_fig.monkeyLabel, monkeyList{monkeyIdx})==1);
+    
+    % Setup gramm parameters and data
+    % Weibull averaged inhibition function
+    RTsummary_fig_gramm(1,monkeyIdx)=...
+        gramm('x',RTsummary_fig.valueLabel(monkeyArrayIdx),... % Weibull fit between 1 and 600 ms
+        'y',RTsummary_fig.data(monkeyArrayIdx),...
+        'color',RTsummary_fig.trialLabel(monkeyArrayIdx));
+    
+    
+    RTsummary_fig_gramm(1,monkeyIdx).geom_jitter('alpha',0.2,'dodge',0.5);
+    RTsummary_fig_gramm(1,monkeyIdx).stat_summary('geom',{'point','black_errorbar','lines'},'type','sem');
+%     RTsummary_fig_gramm(1,monkeyIdx).axe_property('XLim',[200 450]);
+    RTsummary_fig_gramm(1,monkeyIdx).axe_property('YLim',[150 500]);
+    
+    RTsummary_fig_gramm(1,monkeyIdx).no_legend
+    RTsummary_fig_gramm(1,monkeyIdx).set_color_options('map',[colors.noncanc;colors.nostop]);        
+end
+
+
+figure('Renderer', 'painters', 'Position', [100 100 1200 250]);
+RTsummary_fig_gramm.draw();
