@@ -30,6 +30,11 @@ Key scripts
 Details for each analyses and their output are provided within the MATLAB notebook (2021_cmand_value.mlx).
 
 ### Figure 2
+
+| **Figure panel** | *Function* | Description |
+| ---------------- | ---------- | ----------- |
+| Fig 2A | fig2_inhFunc_value | Inhibition function |
+
 **Fig 2A** | *fig2_inhFunc_value*   |  Inhibition function
 **Fig 2B** | *insert*               |  Probability density function - wdPSE
 **Fig 2C** | *fig2_zrftFunc_value*  |  ZRFT function
