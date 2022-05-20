@@ -13,8 +13,9 @@ This repository contains MATLAB scripts developed to examine the influence of va
 In this work, we have used several toolboxes which will be required to run parts of our code.
 
 * [Gramm - GRAMmar of graphics for Matlab (Morel, 2018)](https://github.com/piermorel/gramm)
+* [Donut Plot](https://www.mathworks.com/matlabcentral/fileexchange/56833-donut)
 
-Once complete, data required for this code will be available [here].
+Once complete, data required for this code will be available on OSF.
 
 To run the scripts, add the repository and the dependent toolboxes (with their respective subdirectories) to the MATLAB path. A guide through the analyses within this study is provided in a MATLAB live notebook (2021_cmand_value.mlx) within this directory.
 
@@ -34,21 +35,21 @@ Details for each analyses and their output are provided within the MATLAB notebo
 | **Figure panel** | *Function* | Description |
 | ---------------- | ---------- | ----------- |
 | Fig 2A | fig2_inhFunc_value | Inhibition function |
+| Fig 2B | insert | Probability density function - wdPSE |
+| Fig 2C | fig2_zrftFunc_value | ZRFT function |
+| Fig 2D | fig2_zrftFunc_value | Probability density function - ZRFT slope |
 
-**Fig 2A** | *fig2_inhFunc_value*   |  Inhibition function
-**Fig 2B** | *insert*               |  Probability density function - wdPSE
-**Fig 2C** | *fig2_zrftFunc_value*  |  ZRFT function
-**Fig 2D** | *fig2_zrftFunc_value*  |  Probability density function - ZRFT beta
+### Figure 3
+
+| **Figure panel** | *Function* | Description |
+| ---------------- | ---------- | ----------- |
+| Fig 3A | fig2_cdf_value | Cumulative density function - RT |
+| Fig 3B | insert | Probability density function - wdPSE |
+| Fig 3C | fig2_pSession_racemodel | Proportion of race model violations |
+| Fig 3D | fig2_ssrt_boxplot | Boxplot of SSRT estimates |
+| Fig 3E | fig2_delta_ssrtRT_boxplot | Context difference in SSRT and GO RT |
 
 
 
 
-
-fig2_cdf_value
-fig2_delta_ssrtRT_boxplot
-fig2_inhFunc_value
-fig2_postRTslow
-fig2_pSession_racemodel
-fig2_ssd_rtViolation
-fig2_ssrt_boxplot
-fig2_zrftFunc_value
+Readme last updated: 2022-05-20, 0950, S P Errington
