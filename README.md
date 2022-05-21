@@ -32,7 +32,7 @@ Details for each analyses and their output are provided within the MATLAB notebo
 
 ### Figure 2
 
-| **Figure panel** | *Function* | Description |
+| **Figure panel** | *Script* | Description |
 | ---------------- | ---------- | ----------- |
 | Fig 2A | fig2_inhFunc_value | Inhibition function |
 | Fig 2B | insert | Probability density function - wdPSE |
@@ -41,7 +41,7 @@ Details for each analyses and their output are provided within the MATLAB notebo
 
 ### Figure 3
 
-| **Figure panel** | *Function* | Description |
+| **Figure panel** | *Script* | Description |
 | ---------------- | ---------- | ----------- |
 | Fig 3A | fig2_cdf_value | Cumulative density function - RT |
 | Fig 3B | insert | Probability density function - wdPSE |
