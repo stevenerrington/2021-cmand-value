@@ -6,7 +6,7 @@ tmp = load("../../_data/2021_dajo_EXGmodel.RData")
 
 # Setup parameters for the upcoming analysis
 # Note: this analysis will have to be run on a more 
-cores = 4 # Many of the functions below can utilise multiple cores. Recommend running from HPC to run this on
+nCores = 6 # Many of the functions below can utilise multiple cores. Recommend running from HPC to run this on
 
 ## Parameterise the model fit ############################
 # Initialise and run samples level objects
@@ -14,10 +14,10 @@ cores = 4 # Many of the functions below can utilise multiple cores. Recommend ru
 # hierarchical model coming up
 samples <- h.samples.dmc(nmc = 120, p.prior, data = dm)
 samples <- h.run.dmc(samples,
-                     cores = cores,
+                     cores = nCores,
                      report = 1,
                      p.migrate = 0.05)
-samples1 <- h.RUN.dmc(samples, cores = cores, max.try = 100)
+samples1 <- h.RUN.dmc(samples, cores = nCores, max.try = 100)
 save(dm, samples, samples1, file = "../../_data/2021_dajo_EXG3samples.RData")
 
 ## Run DMC Model  ##############################
