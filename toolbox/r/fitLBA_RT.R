@@ -1,107 +1,57 @@
+###################################################################
+#### Setup workspace
 # Clear the workspace for the new analysis
-rm(list=ls())
+rm(list = ls())
 
-# Setup workspace
-source("./_toolbox/OSF_Skippen/parse/aux_pars.R") # See select_subj() below; From Dora Matzke (d.matzke@uva.nl)
+# Set a seed for reproducability (hopefully!)
+set.seed(0)
+
+# Load in relevant libraries
 library(plyr)
 library(rtdists)
+library(ggplot2)
+source('getLBAestimates.r') # Load estimation scripts
 
-###################################################################
-#### Import raw data into R from CSV
-# Get a list of all the sessions within the data folder to analyses
+# Get a list of all the sessions within the session_data folder to analyses
 sessionList = list.files(path = "_data/csv_raw",
                          pattern = "*.csv",
                          full.names = F)
 
-# Load in the first session from the CSV file
-i = sessionList[1]
-dat = read.csv(paste("_data/csv_raw/", i, sep = ""),
-               header = T,
-               stringsAsFactors = FALSE)[, c(
-                 "sessionName",
-                 'monkeyName',
-                 "sessionN",
-                 "trial",
-                 "block",
-                 "blocktrial",
-                 "trialType",
-                 "targetLoc",
-                 "ssd",
-                 "response",
-                 "rt",
-                 "value"
-               )]
-
+# Initiate variables 
+lbaOutput = list()
 
 
 ###################################################################
-#### Clean data
+#### Run extraction of parameters across all sessions
+# For each session
+for (i in 1:length(sessionList)) {
+  # Load in the relevant session
+  session_name = sessionList[i]
+  session_data = read.csv(paste("_data/csv_raw/", session_name, sep = ""),
+                          header = T,
+                          stringsAsFactors = FALSE)
+ 
 
-# Make trials that were not started with a NA
-dat$response[dat$response == "NoStart"] <- NA
-dat$response[dat$response == "NoResponse"] <- NA
-dat$response[dat$trialType == "Stop"] <- NA
-dat$rt[dat$rt > 1000] <- NA
-dat$rt[dat$rt < 100 & dat$rt > 2] <- NA
-
-dat$response[dat$response == "Left"] <- 1
-dat$response[dat$response == "Right"] <- 2
-
-
-# Remove the NA trials
-dat <- na.omit(dat)
-
-
-###################################################################
-# Here, I will just extract RT data from go right/left trials
-rt_data <- dat[, c('rt', 'response')]
-
-
-# Setup function
-objective_fun <- function(par, rt, response, distribution = "norm") {
-  # simple parameters
-  spar <- par[!grepl("[12]$", names(par))]  
+  ###################################################################
+  #### Tidy and isolate session_data of interest to input to the model
   
-  # distribution parameters:
-  dist_par_names <- unique(sub("[12]$", "", grep("[12]$" ,names(par), value = TRUE)))
-  dist_par <- vector("list", length = length(dist_par_names))
-  names(dist_par) <- dist_par_names
-  for (i in dist_par_names) dist_par[[i]] <- as.list(unname(par[grep(i, names(par))]))
-  dist_par$sd_v <- c(1, dist_par$sd_v) # fix first sd to 1
+  # Remove the following trial types from the data
+  session_data$response[session_data$response == "NoStart"] <- NA # trials that weren't started
+  session_data$response[session_data$response == "NoResponse"] <- NA # trials that didn't elicit a response
+  session_data$response[session_data$trialType == "Stop"] <- NA # trials in which a stop-signal was presented
+  session_data$rt[session_data$rt > 1000] <- NA # trials with too long RT's
+  session_data$rt[session_data$rt < 100 & session_data$rt > 2] <- NA # trials with too short RT's
   
-  # get summed log-likelihood:
-  d <- do.call(dLBA, args = c(rt=list(rt), response=list(response), spar, dist_par, 
-                              distribution=distribution, silent=TRUE))
-  if (any(d < 0e-10)) return(1e6) 
-  else return(-sum(log(d)))
+  session_data <- na.omit(session_data) # Remove trials.
+  
+  # Define the RT's of interest to fit to the accumulator
+  input_rt_data <- session_data$rt[session_data$value == "Low"]
+  
+  ###################################################################
+  #### Run LBA fitting function
+  test = getLBAestimates(session_name,input_rt_data) # Run the estimation script
+   
 }
 
-# Run function
-init_par <- runif(6)
-init_par[2] <- sum(init_par[1:2]) # ensures b is larger than A
-init_par[3] <- runif(1, 0, min(rt_data$rt)) #ensures t0 is mot too large
-names(init_par) <- c("A", "b", "t0", "mean_v1", "mean_v2",  "sd_v2")
-LBA_param = nlminb(objective_fun, start = init_par, rt=rt_data$rt, response=rt_data$response, lower = 0)
 
 
-
-
-
-
-rt1 <- rLBA(1000, A=LBA_param$par["A"], b=LBA_param$par["b"], t0 = LBA_param$par["t0"],
-              mean_v=c(LBA_param$par["mean_v1"], LBA_param$par["mean_v2"]), sd_v=c(1,LBA_param$par["sd_v2"]))
-
-
-
-hgA <- hist(rt_data$rt, breaks=seq(100,1000,by=25), main="Observed")
-hgB <- hist(rt1$rt, breaks=seq(100,1000,by=25), main="LBA")
-
-c1 <- rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
-c2 <- rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
-
-plot(hgA, col = c1, xlim = c(100, 700))
-plot(hgB, add = TRUE, col = c2, xlim = c(100, 700))
-
-
-
-max(rt1$rt)
