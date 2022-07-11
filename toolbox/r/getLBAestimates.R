@@ -24,8 +24,7 @@ getLBAestimates <- function (session_name,input_rt_data)
   ###################################################################
   #### Run function
   LBA_param = nlminb(objective_fun, start = init_par, rt=input_rt_data, lower = 0)
-  LBA_param = optim(init_par, objective_fun, rt=input_rt_data)
-  
+
 
   return(LBA_param)
   
