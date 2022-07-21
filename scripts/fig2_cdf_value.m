@@ -3,7 +3,7 @@ monkeyList = {'darwin','Euler','joule','Xena'};
 valueConds = {'lo','hi'}; % 'hi'
 nSessions = length(valuedata_master.sessionN);
 
-getColor_value
+getColor_value;
 
 for valueCondIdx = 1:2
     valueCond = valueConds{valueCondIdx};
@@ -63,8 +63,8 @@ for monkeyIdx = 1:length(monkeyList)
     valRTCDF_monkey(2,monkeyIdx).axe_property('XLim',[0 600]);
     valRTCDF_monkey(2,monkeyIdx).axe_property('YLim',[0 1]);
     
-    valRTCDF_monkey(1,monkeyIdx).no_legend
-    valRTCDF_monkey(2,monkeyIdx).no_legend
+    valRTCDF_monkey(1,monkeyIdx).no_legend;
+    valRTCDF_monkey(2,monkeyIdx).no_legend;
         
 end
 
@@ -100,7 +100,7 @@ for monkeyIdx = 1:length(monkeyList)
 %     RTsummary_fig_gramm(1,monkeyIdx).axe_property('XLim',[200 450]);
     RTsummary_fig_gramm(1,monkeyIdx).axe_property('YLim',[150 500]);
     
-    RTsummary_fig_gramm(1,monkeyIdx).no_legend
+    RTsummary_fig_gramm(1,monkeyIdx).no_legend;
     RTsummary_fig_gramm(1,monkeyIdx).set_color_options('map',[colors.noncanc;colors.nostop]);        
 end
 
