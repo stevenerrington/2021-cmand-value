@@ -16,7 +16,7 @@ nModel_iter = 20; % Number of times to run model fit
 nSim_iter = 1000; % Number of trials in simulation of model fit parameters
 getColor_value
 
-% Set seed for reproducability
+% Set seed for (hopeful) reproducability
 rng(1) 
 
 
@@ -27,10 +27,14 @@ fprintf(['Running model comparison for session %i of %i | ' valuedata_master.ses
 % Input RT from master table and configure data for use with the LBA analysis
 clear model_input
 
+% Define RT values for high and low value contexts
 model_input.rt_obs.lo = valuedata_master.valueRTdist(session_i).lo.nostop(:,1);
 model_input.rt_obs.hi = valuedata_master.valueRTdist(session_i).hi.nostop(:,1);
+% Concatenate them into one array
 model_input.data.rt = [model_input.rt_obs.lo;model_input.rt_obs.hi];
+% Give labels for low and high context, respectively
 model_input.data.cond = [ones(length(model_input.rt_obs.lo),1);ones(length(model_input.rt_obs.hi),1)*2];
+% ...and provide other labels, irrelevant to this study.
 model_input.data.correct = ones(length(model_input.data.cond),1);
 model_input.data.stim = ones(length(model_input.data.cond),1);
 model_input.data.response = ones(length(model_input.data.cond),1);
@@ -56,48 +60,51 @@ LBA parameter defintions
 5) Start model: all but start point fixed
 7) Rate SD model: all but standard deviation of the drift rate fixed
 
+As of today (2022-08-05, 12h54) I am just playing about to get one model to
+work, and then I will adjust accordingly.
 ###############################################################
 *** Info
-Parameters are
+Parameters must be inputted into LBA scripts in the following order:
+[v, A, b, t0, sv]. If allowing the parameter to vary between conditions,
+then an  additional parameter is added to this array. For example, allowing
+drift rate to vary would result in the following array: [v, v, A, b, t0, sv]
 
 ###############################################################
 %}
-clear model init_params
 
-model_labels = {'null','threshold','rate','onset','start','rate_sd'};
+% Create a clean environment for defining the model
+clear model init_params param_def
 
-% Default parameters
+% Define the default parameters
 param_def.v = 0.6;
 param_def.A = 30;
 param_def.b = 120;
 param_def.t0 = 100;
 param_def.sv = 0.8;
 
-% Model 1 (Null model) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define the model to run
+% Model 1 (Null model - all but drift rate variance) %%%%%%%%%%%%%%%%%%%%%
+%    Note: seems to have difficult if this isn't allowed to vary between
+%    conditions? (2022-08-05, 12h58).
+
 model_i = 1; model_label = 'null';
 model(model_i).v = 1; 
 model(model_i).A = 1; 
 model(model_i).b = 1; 
 model(model_i).t0 = 1; 
-model(model_i).sv = 1;
+model(model_i).sv = 2;
 
-init_params{model_i} = [param_def.v param_def.A param_def.b param_def.t0 param_def.sv];
+% Place all model parameters into a cell array for future calls.
+init_params{model_i} = [param_def.v param_def.A param_def.b param_def.t0 param_def.t0 param_def.sv param_def.sv];
 
-% Model 2 (Threshold model) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-model_i = 2; model_label = 'all';
-model(model_i).v = 1; 
-model(model_i).A = 2; 
-model(model_i).b = 1; 
-model(model_i).t0 = 1; 
-model(model_i).sv = 1;
-
-init_params{model_i} = ...
-    [param_def.v, param_def.A, param_def.A, param_def.b, param_def.t0, param_def.sv] ;
 
 
 %% Run model
 % Model 1: null model
-model_i = 2; 
+model_i = 1; 
+
+% Create a clean environment for running the model
+clear params logLikelihood model_standard_params param_rand_start
 
 % Run each model 20 times, each with a different starting point. With this,
 % it allows for reliability - we start the optimization in different spots
@@ -124,27 +131,43 @@ for model_iter_i = 1:nModel_iter
 
     % We then run the optimization script, getting the fit parameters
     % (params) and log Likelihood (logLikelihood) for the current iteration.
-    [params{model_i}(model_iter_i,:), logLikelihood(model_iter_i,model_i)] =....
+    [params(model_iter_i,:), logLikelihood(model_iter_i,:)] =....
         LBA_mle(model_input.data, model(model_i), param_rand_start(model_iter_i,:));
 end
 
 %% Simulated data based on model parameters
 
+%{
+Once we have these fitted parameters, we can then simulate data using a
+LBA. Once we have the simulated data, we can then compare this to the
+observed data to make sure it looks correct.
+%}
+
+% For each iteration of the model that we run
 for model_iter_i = 1:nModel_iter
     
+    % Get the extracted parameters
     clear v A b sv t0
-    [v, A, b, sv, t0] = LBA_parse(model(model_i), params{model_i}(model_iter_i,:), 2);
+    [v, A, b, sv, t0] = LBA_parse(model(model_i), params(model_iter_i,:), 2);
     
+    % Then use these parameters in a simulation to get trial by trial RT's
+    % for low (column 1) and high (column 2) reward contexts
     clear  model_sim
     for trl_iter_i = 1:nSim_iter
         model_sim.sim_RT(trl_iter_i,:) = LBA_trial_RT(A, b, v, t0, sv, 2);
     end
     
+    
+    % Once we've extracted these RT's, we can then work out the CDF for
+    % each condition, for observed and simulated data
     clear cdf_plot
     cdf_plot.lo.obs = cumulDist(model_input.rt_obs.lo); cdf_plot.lo.sim = cumulDist(model_sim.sim_RT(:,1));
     cdf_plot.hi.obs = cumulDist(model_input.rt_obs.hi); cdf_plot.hi.sim = cumulDist(model_sim.sim_RT(:,2));
     
-    
+    % For each iteration, we generate a figure, and plot the CDF.
+    % In these figures, dashed lines are the simulated data and thicker
+    % solid lines are the observed. Blue represents low value context,
+    % magenta represents high value context.
     figure('Renderer', 'painters', 'Position', [100 100 300 600]);
     subplot(2,1,1); hold on
     plot(cdf_plot.lo.obs(:,1),cdf_plot.lo.obs(:,2),'-','color',colors.lo,'LineWidth',1.5)
