@@ -28,20 +28,39 @@ for session_i = 1:size(valuedata_master,1)
     %% Setup models (see help LBA_mle)
     clear model pArray names
     
-    % Model 1: varying drift rate
-    model(1).v = 2; model(1).A = 1; model(1).b = 1; model(1).t0 = 1; model(1).sv = 1;
-    pArray{1} = [0.8 0.8 300 150 0.4 200];
-    names{1} = ['v1 \t v2 \t A \t B \t sv \t t0'];
+    % Model 1: null model
+    model_i = 1;
+    model(model_i).v = 1; model(model_i).A = 1; model(model_i).b = 1; model(model_i).t0 = 1; model(model_i).sv = 1;
+    pArray{model_i} = [0.8 300 150 0.4 200];
+    names{model_i} = ['v \t A \t B \t sv \t t0'];    
     
-    % Model 2: varying threshold/bound
-    model(2).v = 1; model(2).A = 1; model(2).b = 2; model(2).t0 = 1; model(2).sv = 1;
-    pArray{2} = [0.8 300 150 150 0.4 200];
-    names{2} = ['v \t A \t b1 \t b2 \t sv \t t0'];
+    % Model 2: varying drift rate
+    model_i = 2;
+    model(model_i).v = 2; model(model_i).A = 1; model(model_i).b = 1; model(model_i).t0 = 1; model(model_i).sv = 1;
+    pArray{model_i} = [0.8 0.8 300 150 0.4 200];
+    names{model_i} = ['v1 \t v2 \t A \t B \t sv \t t0'];
     
-    % Model 2: varying threshold/bound
-    model(3).v = 1; model(3).A = 1; model(3).b = 1; model(3).t0 = 2; model(3).sv = 1;
-    pArray{3} = [0.8 300 150 0.4 200 200];
-    names{3} = ['v \t A \t b1 \t sv \t t0_1 \t t0_2'];
+    % Model 3: varying threshold/bound
+    model_i = 3;
+    model(model_i).v = 1; model(model_i).A = 1; model(model_i).b = 2; model(model_i).t0 = 1; model(model_i).sv = 1;
+    pArray{model_i} = [0.8 300 150 150 0.4 200];
+    names{model_i} = ['v \t A \t b1 \t b2 \t sv \t t0'];
+    
+    % Model 4: varying threshold/bound
+    model_i = 4;
+    model(model_i).v = 1; model(model_i).A = 1; model(model_i).b = 1; model(model_i).t0 = 2; model(model_i).sv = 1;
+    pArray{model_i} = [0.8 300 150 0.4 200 200];
+    names{model_i} = ['v \t A \t b1 \t sv \t t0_1 \t t0_2'];
+
+    % Model 5: varying all
+    model_i = 5;
+    model(model_i).v = 2; model(model_i).A = 2; model(model_i).b = 2; model(model_i).t0 = 2; model(model_i).sv = 2;
+    pArray{model_i} = [0.8 0.8 300 300 150 150 0.4 0.4 200 200];
+    names{model_i} = ['v1 \t v2 \t A1 \t A2 \t b1 \t b2 \t sv1 \t sv2 \t t0_1 \t t0_2'];
+    
+    
+    
+    
     
     %% Derive parameters for each model
     clear params LL
@@ -49,30 +68,31 @@ for session_i = 1:size(valuedata_master,1)
     n_models = size(model,2);
     
     for model_i = 1:n_models
-        [params{model_i} LL(model_i)] = LBA_mle(data, model(model_i), pArray{model_i});
+        [params{model_i}, LL(model_i)] = LBA_mle(data, model(model_i), pArray{model_i});
+        [aic(model_i), bic(model_i)] = aicbic(LL(model_i),1,length(data.cond)); 
     end
     
     out_LL(session_i,:) = LL;
     
-    %% Compare plots of data and model fit
-    %     for model_i = 1:n_models
-    %
-    %         % Fit models
-    %         Ncond = max(data.cond);
-    %         cor = data.response == data.stim;
-    %         [v A b sv t0] = LBA_parse(model(model_i), params{model_i}, Ncond);
-    %
-    %         % Plot data and predictions
-    %         LBA_plot(data, params{model_i}, model(model_i));
-    %
-    %         % Print out parameters
-    %         fprintf('\n\n Model %d parameters: \n\n',model_i);
-    %         fprintf(['\n' names{model_i} '\n\n']);
-    %         fprintf(num2str(params{model_i}));
-    %         fprintf('\n\n Model %d log-likelihood: \n',model_i);
-    %         fprintf(['\n' num2str(LL(model_i)) '\n\n']);
-    %     end
-    %
+    % Compare plots of data and model fit
+        for model_i = 1:n_models
+    
+            % Fit models
+            Ncond = max(data.cond);
+            cor = data.response == data.stim;
+            [v A b sv t0] = LBA_parse(model(model_i), params{model_i}, Ncond);
+    
+            % Plot data and predictions
+            LBA_plot(data, params{model_i}, model(model_i));
+    
+            % Print out parameters
+            fprintf('\n\n Model %d parameters: \n\n',model_i);
+            fprintf(['\n' names{model_i} '\n\n']);
+            fprintf(num2str(params{model_i}));
+            fprintf('\n\n Model %d log-likelihood: \n',model_i);
+            fprintf(['\n' num2str(LL(model_i)) '\n\n']);
+        end
+    
 end
 
 
