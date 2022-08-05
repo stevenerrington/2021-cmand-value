@@ -1,4 +1,4 @@
-function [v, A, b, sv, t0] = LBA_parse(model, pArray, Ncond)
+function [v A b sv t0] = LBA_parse_old(model, pArray, Ncond)
 % Parse parameter vector for fitting LBA
 %
 % SF 2012

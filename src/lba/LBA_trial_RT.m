@@ -1,4 +1,4 @@
-function [choice, RT, conf] = LBA_trial(A, b, v, t0, sv, N)
+function [RT] = LBA_trial_RT(A, b, v, t0, sv, N)
 % Run a single trial of the LBA model (Brown & Heathcote, 2008, Cog
 % Psychol)
 %
@@ -29,41 +29,18 @@ while ~trialOK
     for i = 1:N
         
         % Get starting point
-        k(i) = rand.*A;
+        k(i) = rand.*A(i);
         
         % Get drift rate
-        d(i) = normrnd(v(i), sv);
+        d(i) = normrnd(v(i), sv(i));
         
         % Get time to threshold
-        t(i) = (b-k(i))./d(i);
+        t(i) = (b(i)-k(i))./d(i);
         
         % Add on non-decision time
-        allRT(i) = t0 + t(i);
+        RT(i) = t0(i) + t(i);
     end
     
-    % Get choice and confidence
-    [RT choice] = min(allRT);
-    
-    % Confidence is equal to threshold minus value of next best accumulator at decision
-    % time
-    j=1;
-    if N == 1
-        conf = NaN;
-        trialOK = true;
-    else
-        for i = 1:N
-            if i ~= choice
-                z(j) = t(choice).*d(i) + k(i);
-                j=j+1;
-            end
-        end
-        [nb i] = max(z);
-        conf = b-nb;
-        % Check we have not sampled negative drift(s)
-        if RT > 0 & nb > 0
-            trialOK = true;
-        end
-    end
-    
+    trialOK = true;
 
 end

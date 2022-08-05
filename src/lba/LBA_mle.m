@@ -1,4 +1,4 @@
-function [params LL] = LBA_mle(data, model, pArray)
+function [params, LL] = LBA_mle(data, model, pArray)
 % Continuous maximum likelihood estimation of LBA model
 % [params fVal] = LBA_mle(data, model, pArray)
 %
