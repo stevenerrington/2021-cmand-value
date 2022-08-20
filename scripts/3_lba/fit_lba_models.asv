@@ -19,6 +19,7 @@ getColor_value
 % Set seed for (hopeful) reproducability
 rng(1) 
 
+
 %% Setup data
 session_i = 10;
 fprintf(['Running model comparison for session %i of %i | ' valuedata_master.session{session_i} ' \n'],session_i,size(valuedata_master,1))
@@ -72,14 +73,14 @@ drift rate to vary would result in the following array: [v, v, A, b, t0, sv]
 %}
 
 % Create a clean environment for defining the model
-clear model model_in init_params param_def
+clear model init_params param_def
 
 % Define the default parameters
-param_def.v(1) = 0.6; param_def.v(2) = 0.8;
+param_def.v(1) = 0.55; param_def.v(2) = 0.55;
 param_def.A(1) = 40; param_def.A(2) = 40;
-param_def.b(1) = 300; param_def.b(2) = 200;
-param_def.t0(1) = 100; param_def.t0(2) = 100;
-param_def.sv(1) = 0.2; param_def.sv(2) = 0.2;
+param_def.b(1) = 200; param_def.b(2) = 110;
+param_def.t0(1) = 500; param_def.t0(2) = 100;
+param_def.sv(1) = 0.1; param_def.sv(2) = 0.1;
 
 % Define the model to run
 % Model 1 (Null model - all but drift rate variance) %%%%%%%%%%%%%%%%%%%%%
@@ -89,7 +90,7 @@ model(model_i).v = 2;
 model(model_i).A = 2; 
 model(model_i).b = 2; 
 model(model_i).t0 = 2; 
-model(model_i).sv = 1;
+model(model_i).sv = 2;
 
 % Place all model parameters into a cell array for future calls.
 param_labels = {'v','A','b','t0','sv'};
@@ -125,7 +126,7 @@ for model_iter_i = 1:nModel_iter
         clear lower_bound upper_bound
         % Define a boundary - starting point must be with 20% of
         % the defined boundary set above.
-        scale = 0.1;
+        scale = 1;
         lower_bound =  model_standard_params(param_i) .* (1-scale);
         upper_bound =  model_standard_params(param_i) .* (1+scale);
         
@@ -151,8 +152,6 @@ LBA. Once we have the simulated data, we can then compare this to the
 observed data to make sure it looks correct.
 %}
 
-figure('Renderer', 'painters', 'Position', [100 100 1500 300]);
-
 % For each iteration of the model that we run
 for model_iter_i = 1:nModel_iter
     
@@ -167,24 +166,24 @@ for model_iter_i = 1:nModel_iter
         model_sim.sim_RT(trl_iter_i,:) = LBA_trial_RT(A, b, v, t0, sv, 2);
     end
     
+    
     % Once we've extracted these RT's, we can then work out the CDF for
     % each condition, for observed and simulated data
     clear cdf_plot
-    cdf_plot.lo.obs = cumulDist(model_input.rt_obs.lo); % Low, observed
-    cdf_plot.lo.sim = cumulDist(model_sim.sim_RT(:,1)); % Low, simulated
-    cdf_plot.hi.obs = cumulDist(model_input.rt_obs.hi); % High, observed
-    cdf_plot.hi.sim = cumulDist(model_sim.sim_RT(:,2)); % High, simulated
+    cdf_plot.lo.obs = cumulDist(model_input.rt_obs.lo); cdf_plot.lo.sim = cumulDist(model_sim.sim_RT(:,1));
+    cdf_plot.hi.obs = cumulDist(model_input.rt_obs.hi); cdf_plot.hi.sim = cumulDist(model_sim.sim_RT(:,2));
     
     % For each iteration, we generate a figure, and plot the CDF.
     % In these figures, dashed lines are the simulated data and thicker
     % solid lines are the observed. Blue represents low value context,
     % magenta represents high value context.
-    subplot(2,nModel_iter,model_iter_i); hold on
+    figure('Renderer', 'painters', 'Position', [100 100 300 600]);
+    subplot(2,1,1); hold on
     plot(cdf_plot.lo.obs(:,1),cdf_plot.lo.obs(:,2),'-','color',colors.lo,'LineWidth',1.5)
     plot(cdf_plot.lo.sim(:,1),cdf_plot.lo.sim(:,2),'--','color',colors.lo,'LineWidth',0.5)
     xlim([0 600]); ylabel('CDF')
     
-    subplot(2,nModel_iter,model_iter_i+nModel_iter); hold on
+    subplot(2,1,2); hold on
     plot(cdf_plot.hi.obs(:,1),cdf_plot.hi.obs(:,2),'-','color',colors.hi,'LineWidth',1.5)
     plot(cdf_plot.hi.sim(:,1),cdf_plot.hi.sim(:,2),'--','color',colors.hi,'LineWidth',0.5)
     xlim([0 600]); xlabel('Response Latency (ms)'); ylabel('CDF')

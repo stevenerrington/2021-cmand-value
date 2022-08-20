@@ -43,8 +43,12 @@ function [params, LL] = LBA_mle(data, model, pArray)
 % SF 2012 sf102@nyu.edu
 
 options = optimset('Display','off','MaxFunEvals',100000);
-LB = ones(1,length(pArray)).*1e-5;
-UB = ones(1,length(pArray)).*Inf;
+LB = pArray.*0.75;
+UB = pArray.*1.25;
+
+% LB = ones(1,length(pArray)).*1e-5;
+% UB = ones(1,length(pArray)).*Inf;
+
 [params fVal] = fmincon(@fitfunc,pArray,[],[],[],[],LB,UB,[],options);
 
 LL = -fVal;
@@ -64,37 +68,20 @@ LL = -fVal;
         t0 = real(log(t0));
         
         %% Get likelihoods
-        if isfield(data, 'coherence')
-            vi = data.coherence;
-            for t = 1:length(vi)  % which drift rate to place in 1st slot (based on subject's response) - faster way to do this??
-                currFirst = vi(t,1);
-                vi(t,1) = vi(t,data.response(t));
-                vi(t,data.response(t)) = currFirst;
-            end
-            vi = repmat(v(data.cond),1,Nresp).*vi; % linear mapping into drift rate
-            rtfit = data.rt - exp(t0(data.cond));
-            % trial likelihoods
-            p = LBA_n1PDF(rtfit, exp(A(data.cond)), exp(b(data.cond)) + exp(A(data.cond)), vi, sv(data.cond));
-            
-        elseif isfield(data, 'cond')
-            
-            % Get log-liks for these parameters
-            cor = data.response == data.stim;
-            if Ncond == 1
-                vi = [repmat(v,length(data.cond),1) repmat(1-v,length(data.cond),1)];
-            else
-                vi = [v(data.cond) 1-v(data.cond)];
-            end
-            vi(logical(~cor),:) = vi(logical(~cor),[2 1]);    % flip if incorrect
-            rtfit = data.rt - exp(t0(data.cond));
-            
-            % trial likelihoods
-            p = LBA_n1PDF(rtfit, exp(A(data.cond)), exp(b(data.cond)) + exp(A(data.cond)), vi, sv(data.cond));
-            
+        
+        % Get log-liks for these parameters
+        cor = data.response == data.stim;
+        if Ncond == 1
+            vi = [repmat(v,length(data.cond),1) repmat(1-v,length(data.cond),1)];
         else
-            fprintf('\n\n\nBad input! See help LBA_mle.\n\n');
-            return;
+            vi = [v(data.cond) 1-v(data.cond)];
         end
+        vi(logical(~cor),:) = vi(logical(~cor),[2 1]);    % flip if incorrect
+        rtfit = data.rt - exp(t0(data.cond));
+        
+        % trial likelihoods
+        p = LBA_n1PDF(rtfit, exp(A(data.cond)), exp(b(data.cond)) + exp(A(data.cond)), vi, sv(data.cond));
+        
         
         p(p<=1e-5) = 1e-5;  % avoid underflow
         negLL = -sum(log(p));

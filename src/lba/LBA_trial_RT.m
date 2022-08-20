@@ -23,24 +23,21 @@ function [RT] = LBA_trial_RT(A, b, v, t0, sv, N)
 %
 % SF 2012
 
-trialOK = false;
 
-while ~trialOK
-    for i = 1:N
-        
-        % Get starting point
-        k(i) = rand.*A(i);
-        
-        % Get drift rate
-        d(i) = normrnd(v(i), sv(i));
-        
-        % Get time to threshold
-        t(i) = (b(i)-k(i))./d(i);
-        
-        % Add on non-decision time
-        RT(i) = t0(i) + t(i);
-    end
+for i = 1:N
     
-    trialOK = true;
+    % Get starting point
+    k(i) = rand.*A(i);
+    
+    % Get drift rate
+    d(i) = normrnd(v(i), sv(i));
+    
+    % Get time to threshold
+    t(i) = (b(i)-k(i))./d(i);
+    
+    % Add on non-decision time
+    RT(i) = t0(i) + t(i);
+end
+
 
 end
