@@ -42,9 +42,9 @@ function [params, LL] = LBA_mle(data, model, pArray)
 %
 % SF 2012 sf102@nyu.edu
 
-options = optimset('Display','off','MaxFunEvals',100000);
-LB = pArray.*0.75;
-UB = pArray.*1.25;
+options = optimset('Display','off','MaxFunEvals',100000,'MaxIter',100000);
+LB = pArray.*1e-1;
+UB = pArray.*1e1;
 
 % LB = ones(1,length(pArray)).*1e-5;
 % UB = ones(1,length(pArray)).*Inf;

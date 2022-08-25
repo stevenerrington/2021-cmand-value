@@ -20,19 +20,27 @@ getColor_value
 rng(1) 
 
 %% Setup data
-session_i = 10;
-fprintf(['Running model comparison for session %i of %i | ' valuedata_master.session{session_i} ' \n'],session_i,size(valuedata_master,1))
-
 % Input RT from master table and configure data for use with the LBA analysis
-clear model_input
+clear sim_param_def sim_data_rt
 
+% Set simulated data
+sim_param_def.v(1) = 0.6; sim_param_def.v(2) = 0.8;
+sim_param_def.A(1) = 40; sim_param_def.A(2) = 40;
+sim_param_def.b(1) = 300; sim_param_def.b(2) = 200;
+sim_param_def.t0(1) = 100; sim_param_def.t0(2) = 100;
+sim_param_def.sv(1) = 0.2; sim_param_def.sv(2) = 0.2;
+
+
+for trl_iter_i = 1:nSim_iter
+    sim_data_rt(trl_iter_i,:) = LBA_trial_RT...
+        (sim_param_def.A, sim_param_def.b, sim_param_def.v, sim_param_def.t0, sim_param_def.sv, 2);
+end
+
+clear model_input
 % Define RT values for high and low value contexts
-model_input.rt_obs.lo = valuedata_master.valueRTdist(session_i).lo.nostop(:,1);
-model_input.rt_obs.hi = valuedata_master.valueRTdist(session_i).hi.nostop(:,1);
-% Concatenate them into one array
-model_input.data.rt = [model_input.rt_obs.lo;model_input.rt_obs.hi];
+model_input.data.rt = [sim_data_rt(:,1);sim_data_rt(:,2)];
 % Give labels for low and high context, respectively
-model_input.data.cond = [ones(length(model_input.rt_obs.lo),1);ones(length(model_input.rt_obs.hi),1)*2];
+model_input.data.cond = [ones(length(sim_data_rt(:,1)),1);ones(length(sim_data_rt(:,1)),1)*2];
 % ...and provide other labels, irrelevant to this study.
 model_input.data.correct = ones(length(model_input.data.cond),1);
 model_input.data.stim = ones(length(model_input.data.cond),1);
@@ -192,13 +200,13 @@ for model_i = 1:n_models
         [ks_test.lo.h(model_i,model_iter_i),...
             ks_test.lo.p(model_i,model_iter_i),...
             ks_test.lo.stats{model_i,model_iter_i}] =...
-            kstest2(model_sim{model_i,model_iter_i}.sim_RT(:,1),model_input.rt_obs.lo);
+            kstest2(model_sim{model_i,model_iter_i}.sim_RT(:,1),sim_data_rt(:,1));
         
         %... and high value contexts
         [ks_test.hi.h(model_i,model_iter_i),...
             ks_test.hi.p(model_i,model_iter_i),...
             ks_test.hi.stats{model_i,model_iter_i}] =...
-            kstest2(model_sim{model_i,model_iter_i}.sim_RT(:,2),model_input.rt_obs.hi);        
+            kstest2(model_sim{model_i,model_iter_i}.sim_RT(:,2),sim_data_rt(:,2));        
         
     end
 end
@@ -288,9 +296,9 @@ for model_i = 1:n_models
         % Once we've extracted these RT's, we can then work out the CDF for
         % each condition, for observed and simulated data
         clear cdf_plot
-        cdf_plot.lo.obs = cumulDist(model_input.rt_obs.lo); % Low, observed
+        cdf_plot.lo.obs = cumulDist(sim_data_rt(:,1)); % Low, observed
         cdf_plot.lo.sim = cumulDist(model_sim.sim_RT(:,1)); % Low, simulated
-        cdf_plot.hi.obs = cumulDist(model_input.rt_obs.hi); % High, observed
+        cdf_plot.hi.obs = cumulDist(sim_data_rt(:,2)); % High, observed
         cdf_plot.hi.sim = cumulDist(model_sim.sim_RT(:,2)); % High, simulated
         
         % For each iteration, we generate a figure, and plot the CDF.
